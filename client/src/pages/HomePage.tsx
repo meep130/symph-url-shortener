@@ -6,9 +6,31 @@ export default function App() {
   const [expiresAt, setExpiresAt] = useState('');
   const [shortUrl, setShortUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [urlError, setUrlError] = useState('');
+  const [slugError, setSlugError] = useState('');
+
+
+  function isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
 
   const handleSubmit = async () => {
     setLoading(true);
+    setUrlError('');
+    setSlugError('');
+
+    if (!url || !isValidUrl(url)) {
+      setUrlError('Please enter a valid URL (e.g., https://example.com )');
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch('http://localhost:8000/shorten', {
         method: 'POST',
@@ -21,16 +43,26 @@ export default function App() {
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error('Error:', res.status, errorText);
-        alert('Error shortening URL. See console.');
+        const errorData = await res.json().catch(() => ({
+          error: 'Server returned an unexpected error'
+        }));
+
+        if (errorData.error === 'Invalid URL') {
+          setUrlError('Please enter a valid URL');
+        } else if (errorData.error === 'Slug already taken') {
+          setSlugError('This slug is already taken – try another one');
+        } else {
+          alert(errorData.error || 'Something went wrong');
+        }
+
+        setLoading(false);
         return;
       }
 
       const data = await res.json();
       setShortUrl(data.short_url);
     } catch (err) {
-      console.error('Fetch failed:', err);
+      console.error('Fetch failed:', err.message);
       alert('Network error – could not reach server');
     } finally {
       setLoading(false);
@@ -43,30 +75,32 @@ export default function App() {
 
       {/* Long URL Input */}
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">
-          Enter long URL <span className="text-red-500">*</span>
-        </label>
+        <label className="block text-sm font-medium mb-1">Enter long URL</label>
         <input
           placeholder="https://example.com "
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={(e) => {
+            setUrl(e.target.value);
+            setUrlError(''); // Clear error on edit
+          }}
+          className={`w-full border p-2 mb-1 rounded ${urlError ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
         />
-        <small className="text-gray-500 mt-1 block">This is the URL you want to shorten</small>
+        {urlError && <p className="text-red-600 text-sm">{urlError}</p>}
       </div>
 
       {/* Custom Slug Input */}
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">
-          Custom slug (optional)
-        </label>
+        <label className="block text-sm font-medium mb-1">Custom slug (optional)</label>
         <input
           placeholder="your-custom-slug"
           value={customSlug}
-          onChange={(e) => setCustomSlug(e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={(e) => {
+            setCustomSlug(e.target.value);
+            setSlugError(''); // Clear error on edit
+          }}
+          className={`w-full border p-2 mb-1 rounded ${slugError ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
         />
-        <small className="text-gray-500 mt-1 block">Leave blank for auto-generated slug</small>
+        {slugError && <p className="text-red-600 text-sm">{slugError}</p>}
       </div>
 
       {/* Expiration Date Input */}
