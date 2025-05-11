@@ -53,7 +53,7 @@ app.post('/examples', async (req, res) => {
 
 // POST /shorten - Creates a shortened URL
 app.post('/shorten', async (req, res) => {
-  const { original_url, slug } = req.body;
+  const { original_url, slug, expires_at } = req.body;
 
   if (!original_url || !isValidUrl(original_url)) {
     return res.status(400).json({ error: 'Invalid URL' });
@@ -71,10 +71,10 @@ app.post('/shorten', async (req, res) => {
     await db('shortened_urls').insert({
       original_url,
       slug: finalSlug,
+      expires_at: expires_at ? new Date(expires_at).toISOString() : null
     });
-
-    res.json({ short_url: `https://symph.co/${finalSlug}` }); // ✅ Removed extra 
-    // res.json({ short_url: `http://localhost:8000/${finalSlug}` });
+    // res.json({ short_url: `https://symph.co/${finalSlug}` }); 
+    res.json({ short_url: `http://localhost:8000/${finalSlug}` });
   } catch (err) {
     console.error('Error creating short URL:', err.message);
     res.status(500).json({ error: 'Failed to shorten URL' });
@@ -91,15 +91,13 @@ app.get('/:slug', async (req, res) => {
       .first();
 
     if (!result) {
-      return res.status(404).send('Not found or link expired');
+      return res.status(404).send('Not found or expired');
     }
 
-    // Increment redirect count
     await db('shortened_urls')
       .where({ slug })
       .increment('redirect_count', 1);
 
-    // Redirect user
     res.redirect(result.original_url);
   } catch (err) {
     console.error('Redirect failed:', err.message);

@@ -10,6 +10,8 @@ exports.up = async function(knex) {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('original_url').notNullable();
     table.string('slug').unique().notNullable();
+    table.timestamp('expires_at').nullable(); // 👈 This line must exist
+    table.integer('redirect_count').defaultTo(0);
   });
 };
 
