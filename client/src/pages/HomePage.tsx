@@ -10,7 +10,7 @@ export default function App() {
   const [slugError, setSlugError] = useState('');
   const [isUtmOpen, setIsUtmOpen] = useState(false);
 
-// Track individual UTM fields
+  // Track individual UTM fields
   const [utmParams, setUtmParams] = useState({
     utm_source: '',
     utm_medium: '',
@@ -18,6 +18,8 @@ export default function App() {
     utm_term: '',
     utm_content: ''
   });
+
+
 
   function isValidUrl(url: string): boolean {
     try {
@@ -40,8 +42,8 @@ export default function App() {
       return;
     }
 
-      try {
-        const utmFields = {
+    try {
+      const utmFields = {
         ...(utmParams.utm_source && { utm_source: utmParams.utm_source }),
         ...(utmParams.utm_medium && { utm_medium: utmParams.utm_medium }),
         ...(utmParams.utm_campaign && { utm_campaign: utmParams.utm_campaign }),
@@ -55,16 +57,16 @@ export default function App() {
         expires_at: expiresAt || undefined
       };
 
-          // Only include utm_params if at least one UTM field is present
+      // Only include utm_params if at least one UTM field is present
       if (Object.keys(utmFields).length > 0) {
-          body.utm_params = utmFields;
-        } 
+        body.utm_params = utmFields;
+      }
 
       const res = await fetch('http://localhost:8000/shorten', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({
@@ -110,7 +112,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-lg bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-6 border border-gray-200 transition-all duration-300 transform hover:scale-[1.01]">
-        
+
         {/* Header */}
         <h1 className="text-2xl font-bold mb-6 text-center text-gray-800 tracking-tight">Symph URL Shortener</h1>
 
@@ -126,11 +128,10 @@ export default function App() {
                 setUrl(e.target.value);
                 setUrlError('');
               }}
-              className={`w-full border p-3 rounded-md focus:outline-none ${
-                urlError
+              className={`w-full border p-3 rounded-md focus:outline-none ${urlError
                   ? 'border-red-500 bg-red-50'
                   : 'border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
-              }`}
+                }`}
             />
             {urlError && <p className="mt-1 text-sm text-red-600">{urlError}</p>}
           </div>
@@ -145,11 +146,10 @@ export default function App() {
                 setCustomSlug(e.target.value);
                 setSlugError('');
               }}
-              className={`w-full border p-3 rounded-md focus:outline-none ${
-                slugError
+              className={`w-full border p-3 rounded-md focus:outline-none ${slugError
                   ? 'border-red-500 bg-red-50'
                   : 'border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
-              }`}
+                }`}
             />
             {slugError && <p className="mt-1 text-sm text-red-600">{slugError}</p>}
           </div>
@@ -250,11 +250,10 @@ export default function App() {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className={`w-full mt-6 py-3 px-4 rounded-md text-white font-semibold transition-all duration-200 ${
-            loading
+          className={`w-full mt-6 py-3 px-4 rounded-md text-white font-semibold transition-all duration-200 ${loading
               ? 'bg-blue-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
-          }`}
+            }`}
         >
           {loading ? (
             <span className="flex items-center justify-center">

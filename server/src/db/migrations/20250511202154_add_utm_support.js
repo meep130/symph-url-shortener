@@ -1,6 +1,6 @@
 const { Knex } = require('knex');
 
-exports.up = async function(knex) {
+exports.up = async function (knex) {
   const hasUtmParams = await knex.schema.hasColumn('shortened_urls', 'utm_params');
 
   if (!hasUtmParams) {
@@ -10,7 +10,7 @@ exports.up = async function(knex) {
   }
 };
 
-exports.down = async function(knex) {
+exports.down = async function (knex) {
   const hasUtmParams = await knex.schema.hasColumn('shortened_urls', 'utm_params');
 
   if (hasUtmParams) {

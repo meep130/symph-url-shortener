@@ -3,7 +3,7 @@ const { Knex } = require('knex');
 /**
  * @param { import("knex").Knex } knex
  */
-exports.up = async function(knex) {
+exports.up = async function (knex) {
   await knex.raw('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
 
   await knex.schema.createTable('shortened_urls', (table) => {
@@ -33,6 +33,6 @@ exports.redirectUrl = async function (req, res) {
   }
 };
 
-exports.down = async function(knex) {
+exports.down = async function (knex) {
   await knex.schema.dropTable('shortened_urls');
 };

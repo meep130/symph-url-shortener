@@ -14,7 +14,6 @@ app.use(express.json());
 
 // Import knex instance
 import { db } from './db/knex';
-// import query from 'pg-query'; // Only if using raw queries
 
 const memoryCache = new Map<string, string>(); // slug → original_url
 
@@ -28,7 +27,7 @@ async function isValidUrl(url: string): Promise<boolean> {
 }
 
 function generateSlug(): string {
-  return Math.random().toString(36).substring(2, 10); // 8-char slug
+  return Math.random().toString(36).substring(2, 10);
 }
 
 // Root endpoint - Hello world
@@ -111,11 +110,11 @@ app.get('/:slug', async (req, res) => {
   await db('shortened_urls').where({ slug }).increment('redirect_count', 1);
   let redirectUrl = result.original_url;
 
-      if (result.utm_params) {
-        const utmString = new URLSearchParams(result.utm_params).toString();
-        const separator = redirectUrl.includes('?') ? '&' : '?';
-        redirectUrl += `${separator}${utmString}`;
-      }
+  if (result.utm_params) {
+    const utmString = new URLSearchParams(result.utm_params).toString();
+    const separator = redirectUrl.includes('?') ? '&' : '?';
+    redirectUrl += `${separator}${utmString}`;
+  }
   // 🔄 Redirect
   res.redirect(result.original_url);
 });
