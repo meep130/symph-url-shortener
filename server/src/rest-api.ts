@@ -55,7 +55,7 @@ app.post('/examples', async (req, res) => {
 
 // POST /shorten - Creates a shortened URL
 app.post('/shorten', async (req, res) => {
-  const { original_url, slug, expires_at } = req.body;
+  const { original_url, slug, expires_at, utm_params } = req.body;
 
   if (!original_url || !isValidUrl(original_url)) {
     return res.status(400).json({ error: 'Invalid URL' });
@@ -65,7 +65,6 @@ app.post('/shorten', async (req, res) => {
 
   try {
     const exists = await db('shortened_urls').where({ slug: finalSlug }).first();
-
     if (exists) {
       return res.status(400).json({ error: 'Slug already taken' });
     }
@@ -73,15 +72,17 @@ app.post('/shorten', async (req, res) => {
     await db('shortened_urls').insert({
       original_url,
       slug: finalSlug,
-      expires_at: expires_at ? new Date(expires_at).toISOString() : null
+      expires_at: expires_at ? new Date(expires_at).toISOString() : null,
+      utm_params: utm_params || null
     });
-    // res.json({ short_url: `https://symph.co/${finalSlug}` }); 
+
     res.json({ short_url: `http://localhost:8000/${finalSlug}` });
   } catch (err) {
     console.error('Error creating short URL:', err.message);
     res.status(500).json({ error: 'Failed to shorten URL' });
   }
 });
+
 
 // GET /:slug - Redirects to original URL
 app.get('/:slug', async (req, res) => {
@@ -95,6 +96,7 @@ app.get('/:slug', async (req, res) => {
 
   // ❌ Fallback to DB
   const result = await db('shortened_urls')
+    .select('original_url', 'utm_params')
     .whereRaw("slug = ? AND (expires_at IS NULL OR expires_at > NOW())", [slug])
     .first();
 
@@ -107,7 +109,13 @@ app.get('/:slug', async (req, res) => {
 
   // 📈 Increment redirect count
   await db('shortened_urls').where({ slug }).increment('redirect_count', 1);
+  let redirectUrl = result.original_url;
 
+      if (result.utm_params) {
+        const utmString = new URLSearchParams(result.utm_params).toString();
+        const separator = redirectUrl.includes('?') ? '&' : '?';
+        redirectUrl += `${separator}${utmString}`;
+      }
   // 🔄 Redirect
   res.redirect(result.original_url);
 });
