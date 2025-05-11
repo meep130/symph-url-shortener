@@ -66,6 +66,7 @@ services:
     volumes:
       - ./client/src:/app/src/ # mounted whole src to avoid missing reload on new files
       - ./client/public:/app/public
+    command: npm run dev
     env_file: .env
 
   pgadmin:
@@ -83,7 +84,7 @@ services:
 
   smtp-server:
     container_name: dev-smtp-server
-    image: lytrax/mailhog:latest # https://github.com/mailhog/MailHog/issues/353#issuecomment-821137362
+    image: mailhog/mailhog:latest # https://github.com/mailhog/MailHog/issues/353#issuecomment-821137362
     restart: always
     logging:
       driver: "none" # disable saving logs
