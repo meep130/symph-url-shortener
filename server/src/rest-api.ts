@@ -14,7 +14,9 @@ app.use(express.json());
 
 // Import knex instance
 import { db } from './db/knex';
-import query from 'pg-query'; // Only if using raw queries
+// import query from 'pg-query'; // Only if using raw queries
+
+const memoryCache = new Map<string, string>(); // slug → original_url
 
 async function isValidUrl(url: string): Promise<boolean> {
   try {
@@ -85,24 +87,29 @@ app.post('/shorten', async (req, res) => {
 app.get('/:slug', async (req, res) => {
   const { slug } = req.params;
 
-  try {
-    const result = await db('shortened_urls')
-      .whereRaw("slug = ? AND (expires_at IS NULL OR expires_at > NOW())", [slug])
-      .first();
-
-    if (!result) {
-      return res.status(404).send('Not found or expired');
-    }
-
-    await db('shortened_urls')
-      .where({ slug })
-      .increment('redirect_count', 1);
-
-    res.redirect(result.original_url);
-  } catch (err) {
-    console.error('Redirect failed:', err.message);
-    res.status(500).send('Server error');
+  // ✅ First check in-memory cache
+  const cached = memoryCache.get(slug);
+  if (cached) {
+    return res.redirect(cached);
   }
+
+  // ❌ Fallback to DB
+  const result = await db('shortened_urls')
+    .whereRaw("slug = ? AND (expires_at IS NULL OR expires_at > NOW())", [slug])
+    .first();
+
+  if (!result) {
+    return res.status(404).send('Not found or expired');
+  }
+
+  // 🚀 Update cache
+  memoryCache.set(slug, result.original_url);
+
+  // 📈 Increment redirect count
+  await db('shortened_urls').where({ slug }).increment('redirect_count', 1);
+
+  // 🔄 Redirect
+  res.redirect(result.original_url);
 });
 
 // Start server
