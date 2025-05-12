@@ -20,7 +20,6 @@ export default function App() {
   });
 
 
-
   function isValidUrl(url: string): boolean {
     try {
       new URL(url);
@@ -120,7 +119,7 @@ export default function App() {
         <div className="space-y-5">
           {/* Long URL Input */}
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">Enter long URL</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">Enter long URL  <span className="text-red-500">*</span> </label>
             <input
               placeholder="https://example.com "
               value={url}
@@ -185,7 +184,7 @@ export default function App() {
           </button>
 
           {/* Collapsible UTM Fields */}
-          <div className={`mt-3 overflow-hidden transition-all duration-300 ${isUtmOpen ? 'max-h-96' : 'max-h-0'}`}>
+          <div className={`mt-3 overflow-hidden transition-all duration-300 ${isUtmOpen ? 'max-h-105' : 'max-h-0'}`}>
             <div className="space-y-4 p-4 bg-gray-50 rounded-md border border-dashed border-gray-300">
               <div>
                 <label className="block text-xs font-medium text-gray-600">utm_source</label>
@@ -231,7 +230,7 @@ export default function App() {
                   className="w-full mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
-              <div>
+             <div>
                 <label className="block text-xs font-medium text-gray-600">utm_content (optional)</label>
                 <input
                   placeholder="e.g., banner_ad"
